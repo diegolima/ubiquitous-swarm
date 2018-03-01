@@ -1,3 +1,7 @@
+Exec {
+  path => '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/opt/puppetlabs/bin',
+}
+
 class { 'docker':
   version => 'latest',
   require => File['/etc/resolv.conf'],
@@ -40,4 +44,16 @@ docker::swarm {'cluster_worker':
   join       => true,
   manager_ip => '35.226.110.84:2377',
   token      => 'SWMTKN-1-3pazf5uxpcubwizdx9j0b1rvuvqjam8gfelwrwegzoyym4izob-79rvi04pqx4xjdjqkn75j1kjs'
+}
+
+exec { 'create jenkins volume':
+  command => 'docker volume create --driver local --opt type=nfs  --opt o=addr=vpn.diegolima.org,rw --opt device=:/srv/nfs/jenkins --name jenkins',
+  unless  => 'docker volume ls|grep jenkins',
+  require => Class['docker'],
+}
+
+exec { 'create nginx volume':
+  command => 'docker volume create --driver local --opt type=nfs  --opt o=addr=vpn.diegolima.org,rw --opt device=:/srv/nfs/nginx --name nginx',
+  unless  => 'docker volume ls|grep nginx',
+  require => Class['docker'],
 }
